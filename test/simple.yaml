@@ -3,6 +3,7 @@ numbers:
   - 10
   - -8
   - 6
+booleans: [true, True, TRUE, false, False, FALSE]
 nested:
   some: one
   wick: john doe

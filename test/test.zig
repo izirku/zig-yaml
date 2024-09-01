@@ -21,6 +21,7 @@ test "simple" {
     const Simple = struct {
         names: []const []const u8,
         numbers: []const i16,
+        booleans: [6]bool,
         nested: struct {
             some: []const u8,
             wick: []const u8,
@@ -30,6 +31,7 @@ test "simple" {
         pub fn eql(self: @This(), other: @This()) bool {
             if (self.names.len != other.names.len) return false;
             if (self.numbers.len != other.numbers.len) return false;
+            if (self.booleans.len != other.booleans.len) return false;
             if (self.finally.len != other.finally.len) return false;
 
             for (self.names, 0..) |lhs, i| {
@@ -38,6 +40,10 @@ test "simple" {
 
             for (self.numbers, 0..) |lhs, i| {
                 if (lhs != other.numbers[i]) return false;
+            }
+
+            for (self.booleans, 0..) |lhs, i| {
+                if (lhs != other.booleans[i]) return false;
             }
 
             for (self.finally, 0..) |lhs, i| {
@@ -58,6 +64,7 @@ test "simple" {
     const expected = .{
         .names = &[_][]const u8{ "John Doe", "MacIntosh", "Jane Austin" },
         .numbers = &[_]i16{ 10, -8, 6 },
+        .booleans = [_]bool{ true, true, true, false, false, false },
         .nested = .{
             .some = "one",
             .wick = "john doe",

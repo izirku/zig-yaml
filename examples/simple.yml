@@ -1,2 +1,8 @@
 key: value
 other_key: other_value
+boolean_1: true
+boolean_2: True
+boolean_3: TRUE
+boolean_4: false
+boolean_5: False
+boolean_6: FALSE

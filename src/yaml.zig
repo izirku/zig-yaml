@@ -28,6 +28,7 @@ pub const Value = union(enum) {
     empty,
     int: i64,
     float: f64,
+    boolean: bool,
     string: []const u8,
     list: List,
     map: Map,
@@ -40,6 +41,11 @@ pub const Value = union(enum) {
     pub fn asFloat(self: Value) !f64 {
         if (self != .float) return error.TypeMismatch;
         return self.float;
+    }
+
+    pub fn asBool(self: Value) !bool {
+        if (self != .boolean) return error.TypeMismatch;
+        return self.boolean;
     }
 
     pub fn asString(self: Value) ![]const u8 {
@@ -67,6 +73,7 @@ pub const Value = union(enum) {
             .empty => return,
             .int => |int| return writer.print("{}", .{int}),
             .float => |float| return writer.print("{d}", .{float}),
+            .boolean => |boolean| return writer.print("{}", .{boolean}),
             .string => |string| return writer.print("{s}", .{string}),
             .list => |list| {
                 const len = list.len;
@@ -188,6 +195,11 @@ pub const Value = union(enum) {
             try_float: {
                 const float = std.fmt.parseFloat(f64, raw) catch break :try_float;
                 return Value{ .float = float };
+            }
+
+            try_bool: {
+                const boolean = parseYamlBool(raw) catch break :try_bool;
+                return Value{ .boolean = boolean };
             }
 
             return Value{ .string = try arena.dupe(u8, value.string_value.items) };
@@ -375,6 +387,7 @@ pub const Yaml = struct {
             } else |_| {
                 return math.lossyCast(T, try value.asInt());
             },
+            .bool => try value.asBool(),
             .@"struct" => self.parseStruct(T, try value.asMap()),
             .@"union" => self.parseUnion(T, value),
             .array => self.parseArray(T, try value.asList()),
@@ -495,6 +508,13 @@ pub fn stringify(allocator: Allocator, input: anytype, writer: anytype) !void {
         // How can allow the user to specify?
         try value.stringify(writer, .{});
     }
+}
+
+fn parseYamlBool(buf: []const u8) !bool {
+    const eql = std.mem.eql;
+    if (eql(u8, buf, "true") or eql(u8, buf, "True") or eql(u8, buf, "TRUE")) return true;
+    if (eql(u8, buf, "false") or eql(u8, buf, "False") or eql(u8, buf, "FALSE")) return false;
+    return error.InvalidBool;
 }
 
 test {
